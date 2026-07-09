@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jen · JavaScript module for Static Site Generation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#08070c;
+    --bg-raise:#0f0d16;
+    --purple:#4C2882;
+    --purple-bright:#8a5cf6;
+    --yellow:#FBE300;
+    --text:#f3f1f8;
+    --text-dim:#9b93ab;
+    --text-faint:#5f5871;
+    --border:rgba(255,255,255,0.08);
+    --border-bright:rgba(255,255,255,0.16);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html,body{
+    height:100%;
+  }
+
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Space Grotesk',sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow-x:hidden;
+    position:relative;
+    padding:32px 20px;
+  }
+
+  /* grid background */
+  .grid-bg{
+    position:fixed;
+    inset:0;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.045) 1px, transparent 1px);
+    background-size:64px 64px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 80%);
+    -webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 40%, black 20%, transparent 80%);
+    z-index:0;
+  }
+
+  /* orbs */
+  .orb{
+    position:fixed;
+    border-radius:50%;
+    filter:blur(90px);
+    z-index:0;
+    pointer-events:none;
+  }
+  .orb-purple{
+    width:520px;height:520px;
+    background:radial-gradient(circle, var(--purple) 0%, rgba(76,40,130,0) 70%);
+    top:-160px;
+    left:-120px;
+    opacity:0.85;
+    animation:float1 14s ease-in-out infinite;
+  }
+  .orb-yellow{
+    width:420px;height:420px;
+    background:radial-gradient(circle, var(--yellow) 0%, rgba(251,227,0,0) 70%);
+    bottom:-180px;
+    right:-100px;
+    opacity:0.28;
+    animation:float2 16s ease-in-out infinite;
+  }
+  .orb-purple-2{
+    width:300px;height:300px;
+    background:radial-gradient(circle, var(--purple-bright) 0%, rgba(138,92,246,0) 70%);
+    bottom:10%;
+    left:8%;
+    opacity:0.35;
+    animation:float3 12s ease-in-out infinite;
+  }
+
+  @keyframes float1{
+    0%,100%{transform:translate(0,0);}
+    50%{transform:translate(30px,40px);}
+  }
+  @keyframes float2{
+    0%,100%{transform:translate(0,0);}
+    50%{transform:translate(-40px,-20px);}
+  }
+  @keyframes float3{
+    0%,100%{transform:translate(0,0) scale(1);}
+    50%{transform:translate(20px,-30px) scale(1.08);}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .orb{animation:none;}
+  }
+
+  /* card */
+  .card{
+    position:relative;
+    z-index:1;
+    width:100%;
+    max-width:560px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01));
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:44px 40px 36px;
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.02) inset,
+      0 30px 60px -20px rgba(0,0,0,0.6),
+      0 0 120px -40px var(--purple-bright);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    gap:22px;
+  }
+
+  /* version badge */
+  .version-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    padding:6px 14px 6px 10px;
+    border-radius:100px;
+    border:1px solid var(--border-bright);
+    background:rgba(255,255,255,0.03);
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    font-weight:500;
+    color:var(--text-dim);
+    letter-spacing:0.02em;
+  }
+  .version-dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:var(--yellow);
+    box-shadow:0 0 8px 1px var(--yellow);
+    flex-shrink:0;
+    animation:pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{opacity:1;}
+    50%{opacity:0.4;}
+  }
+
+  /* title */
+  .title{
+    font-size:52px;
+    font-weight:700;
+    line-height:1.05;
+    letter-spacing:-0.02em;
+    background:linear-gradient(120deg, #ffffff 10%, var(--purple-bright) 55%, var(--yellow) 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .subtitle-tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    color:var(--text-faint);
+    margin-top:-14px;
+    letter-spacing:0.01em;
+  }
+
+  /* install block */
+  .install-block{
+    width:100%;
+    background:#0c0a13;
+    border:1px solid var(--border);
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 12px 14px 18px;
+    gap:10px;
+  }
+  .install-cmd{
+    font-family:'JetBrains Mono',monospace;
+    font-size:14px;
+    text-align:left;
+    white-space:nowrap;
+    overflow-x:auto;
+    display:flex;
+    gap:2px;
+  }
+  .install-cmd .prompt{color:var(--yellow);}
+  .install-cmd .cmd{color:var(--text-dim);}
+  .install-cmd .pkg{color:var(--text);font-weight:600;}
+  .install-cmd::-webkit-scrollbar{display:none;}
+
+  .copy-btn{
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:34px;
+    height:34px;
+    border-radius:8px;
+    border:1px solid var(--border-bright);
+    background:rgba(255,255,255,0.03);
+    color:var(--text-dim);
+    cursor:pointer;
+    transition:all 0.15s ease;
+  }
+  .copy-btn:hover{
+    background:rgba(255,255,255,0.07);
+    color:var(--text);
+    border-color:rgba(255,255,255,0.25);
+  }
+  .copy-btn.copied{
+    color:var(--yellow);
+    border-color:var(--yellow);
+  }
+  .copy-btn svg{width:16px;height:16px;}
+
+  /* description */
+  .description{
+    font-size:15.5px;
+    line-height:1.6;
+    color:var(--text-dim);
+    max-width:420px;
+  }
+  .description b{
+    color:var(--text);
+    font-weight:600;
+  }
+
+  /* buttons */
+  .btn-row{
+    display:flex;
+    gap:12px;
+    width:100%;
+    margin-top:6px;
+  }
+  .btn{
+    flex:1;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:13px 18px;
+    border-radius:10px;
+    font-size:14px;
+    font-weight:600;
+    font-family:'Space Grotesk',sans-serif;
+    text-decoration:none;
+    cursor:pointer;
+    transition:transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    border:1px solid transparent;
+  }
+  .btn:active{transform:scale(0.97);}
+
+  .btn-primary{
+    background:linear-gradient(120deg, var(--purple) 0%, var(--purple-bright) 100%);
+    color:#fff;
+    box-shadow:0 8px 24px -8px rgba(138,92,246,0.6);
+  }
+  .btn-primary:hover{
+    box-shadow:0 8px 28px -6px rgba(138,92,246,0.85);
+  }
+
+  .btn-secondary{
+    background:rgba(255,255,255,0.03);
+    border-color:var(--border-bright);
+    color:var(--text);
+  }
+  .btn-secondary:hover{
+    background:rgba(255,255,255,0.07);
+    border-color:var(--yellow);
+    color:var(--yellow);
+  }
+
+  .btn svg{width:15px;height:15px;flex-shrink:0;}
+
+  footer{
+    position:relative;
+    z-index:1;
+    margin-top:22px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11.5px;
+    color:var(--text-faint);
+    text-align:center;
+  }
+  footer a{color:var(--text-dim);text-decoration:none;}
+  footer a:hover{color:var(--yellow);}
+
+  @media (max-width:480px){
+    .title{font-size:38px;}
+    .card{padding:36px 24px 28px;}
+    .install-cmd{font-size:12.5px;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="grid-bg"></div>
+  <div class="orb orb-purple"></div>
+  <div class="orb orb-yellow"></div>
+  <div class="orb orb-purple-2"></div>
+
+  <div>
+    <div class="card">
+
+      <div class="version-badge">
+        <span class="version-dot"></span>
+        v 0.6.1 latest
+      </div>
+
+      <div>
+        <div class="title">Jen</div>
+        <div class="subtitle-tag"></div>
+      </div>
+
+      <div class="install-block">
+        <div class="install-cmd" id="installCmd">
+          <span class="prompt">~$</span>
+          <span class="cmd">npm i</span>
+          <span class="pkg">jen</span>
+        </div>
+        <button class="copy-btn" id="copyBtn" aria-label="Copy install command">
+          <svg id="copyIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          <svg id="checkIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </button>
+      </div>
+
+      <p class="description">
+        JavaScript module for Static Site Generation. Still in Early Stages, so bugs may occur. Licensed under the MIT License.
+      </p>
+
+      <div class="btn-row">
+        <a class="btn btn-primary" href="https://www.npmjs.com/package/jen" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M0 0v24h24V0H0zm19.2 19.2h-2.4V7.2h-4.8v12H4.8V4.8h14.4v14.4z"/></svg>
+          View on npm
+        </a>
+        <a class="btn btn-secondary" href="https://github.com/rfunduk/jen" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          Source Code
+        </a>
+      </div>
+
+    </div>
+
+    <footer>Licensed by <a href="https://github.com/rfunduk/jen/blob/master/LICENSE" target="_blank" rel="noopener">MIT</a> License</footer>
+  </div>
+
+<script>
+  const copyBtn = document.getElementById('copyBtn');
+  const copyIcon = document.getElementById('copyIcon');
+  const checkIcon = document.getElementById('checkIcon');
+
+  copyBtn.addEventListener('click', async () => {
+    try{
+      await navigator.clipboard.writeText('npm i jen');
+      copyBtn.classList.add('copied');
+      copyIcon.style.display = 'none';
+      checkIcon.style.display = 'block';
+      setTimeout(() => {
+        copyBtn.classList.remove('copied');
+        copyIcon.style.display = 'block';
+        checkIcon.style.display = 'none';
+      }, 1600);
+    }catch(e){
+      console.error('Copy failed', e);
+    }
+  });
+</script>
+
+</body>
+</html>
